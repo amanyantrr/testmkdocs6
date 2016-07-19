@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <title>VIBE as a Access Point</title>
+  
+
+  <link rel="shortcut icon" href="./img/favicon.ico">
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="./css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="./css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="./css/highlight.css">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "None";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = "/";
+  </script>
+  
+  <script src="./js/jquery-2.1.1.min.js"></script>
+  <script src="./js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="./js/highlight.pack.js"></script>
+  <script src="./js/theme.js"></script> 
+
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> VIBE as a Access Point</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 current">
+        <a class="current" href=".">Home</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#vibe-as-an-access-point">VIBE as an Access Point</a></li>
+                
+            
+            </ul>
+        
+    </li>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">VIBE as a Access Point</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="vibe-as-an-access-point">VIBE as an Access Point</h1>
+<ul>
+<li>Connect VIBE2 to your PC client via ethernet interface.</li>
+<li>
+<p>Check whether eth0 (ethernet connection) is up or not using the command:</p>
+<pre><code>  ifconfig
+
+  eth0      Link encap:Ethernet  HWaddr 1c:ba:8c:f1:a2:40                         
+            inet addr:192.168.1.151  Bcast:192.168.1.255  Mask:255.255.255.0      
+            inet6 addr: fe80::1eba:8cff:fef1:a240/64 Scope:Link                   
+            UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1                    
+            RX packets:2500 errors:0 dropped:180 overruns:0 frame:0               
+            TX packets:1049 errors:0 dropped:0 overruns:0 carrier:0               
+            collisions:0 txqueuelen:1000                                          
+            RX bytes:1494880 (1.4 MiB)  TX bytes:154334 (150.7 KiB)               
+            Interrupt:40
+</code></pre>
+</li>
+<li>
+<p>Now we will set our VIBE as an access point (AP).</p>
+</li>
+<li>
+<p>Before that let us understand what AP needs to be capable of to be AP:</p>
+<ol>
+<li>Inform devices about AP existence (Broadcast SSID) or at least allow         clients to connect.</li>
+<li>Authenticate client.</li>
+<li>Assign IP to the client devices.</li>
+<li>Route packages to the “output” network and the other way around.</li>
+</ol>
+</li>
+<li>
+<p>In order to handle all these,VIBE needs the following tools</p>
+<ol>
+<li>hostapd – Host AccessPoint Daemon </li>
+<li>wpa-supplicant – tool responsible for WPA authorization</li>
+<li>isc-dhcp-server </li>
+<li>ip-tables </li>
+</ol>
+</li>
+</ul>
+<p>Let us now install these tools</p>
+<pre><code>      sudo apt-get update
+
+      sudo apt-get -y install hostapd isc-dhcp-server iptables wpasupplicant
+</code></pre>
+<ul>
+<li>Now let us set the AP configuration by creating the file /etc/hostapd/hostapd.conf and adding the following content<pre><code> interface=wlan0    #wlan0 will be working in AP mode
+ ssid=Your_AP_SSID  #your AP SSID
+ channel=1          #WiFi channel used by AP
+ # WPA and WPA2 configuration
+ macaddr_acl=0      #indicates that you do not use MAC address allow/deny list
+ auth_algs=1        #indicates algorithm specified by IEEE 802.11
+ ignore_broadcast_ssid=0 #AP will broadcast SSID
+
+ #WPA settings
+ wpa=2              #WPA algorithm used (WPA2 in this case)
+ wpa_passphrase=my_secret_pass #AP password
+ wpa_key_mgmt=WPA-PSK #WPA key mangement type
+ wpa_pairwise=TKIP #encription algorithm
+ rsn_pairwise=CCMP #encription algorithm
+
+ #Hardware configuration
+ driver=rtl871xdrv     #type of driver to be used (in may be different depending on your WiFi dongle chipset)
+                       #in majority of cases it will be driver=nl80211
+ ieee80211n=1          #Whether IEEE 802.11n (HT) is enabled 
+ device_name=RTL8192CU #User-friendly description of device (optional)
+ manufacturer=Realtek  #Manufacturer name (optional)
+ hw_mode=g             #WPS RF Bands (a = 5G, b = 2.4G, g = 2.4G, ag = dual band)
+</code></pre>
+</li>
+</ul>
+<p><code>Note:</code> If you are copying the above content ,don't forget to remove the comments from the file.</p>
+<ul>
+<li>
+<p>Now we need to set up /etc/hostapd/hostapd.conf as the configuration file. We do it in /etc/default/hostapd. Put the following line there:</p>
+<pre><code> DAEMON_CONF="/etc/hostapd/hostapd.conf"
+</code></pre>
+</li>
+<li>
+<p>Now let’s configure the network settings for clients connecting to AP. We do it in /etc/dhcp/dhcpd.conf</p>
+<pre><code>  ddns-update-style none;   #DDNS disabled
+  default-lease-time 84600; #IP lease time valid for a day
+  max-lease-time 84600;     #IP lease time valid for a day
+  subnet 192.134.3.0 netmask 255.255.255.0 { #AP Subnet defintion
+  range 192.134.3.2 192.134.3.9  ;         #Range of IP addresses available for clients
+  option domain-name-servers 192.168.1.1 ; #your DNS IP (in my case, my router is workign as DNS)
+  option domain-name "home";     #optional domain name
+  option routers  192.134.3.1  ; #your client's gateway / router IP
+  }
+</code></pre>
+</li>
+<li>
+<p>Again we need to make sure that DHCP server uses this configuration. In /etc/default/isc-dhcp-server put the following lines:</p>
+<pre><code> DHCPD_CONF="/etc/dhcp/dhcpd.conf"
+ INTERFACES="wlan0"
+</code></pre>
+</li>
+<li>
+<p>Now configure wlan0 for static IP adress (the same as router IP in dhcpd.conf file)</p>
+</li>
+<li>
+<p>We do it in /etc/network/interfaces:</p>
+<pre><code> auto wlan0
+ allow-hotplug wlan0
+ iface wlan0 inet static
+      address 192.134.3.1
+      netmask 255.255.255.0
+ up iptables-restore &lt; /etc/iptables.ipv4.nat
+</code></pre>
+</li>
+<li>
+<p>The last line will set routing rules after restart.</p>
+</li>
+<li>Let’s turn on packet forwarding in /etc/sysctl.conf by making sure that line <pre><code> net.ipv4.ip_forward=1
+</code></pre>
+</li>
+</ul>
+<p>is uncommented or added.</p>
+<ul>
+<li>We will configure routing now by executing (assuming eth0 is your WAN interface):<pre><code>sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+sudo iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+</code></pre>
+</li>
+</ul>
+<p>and lets save these setting in a file:</p>
+<pre><code>    sh -c "iptables-save &gt; /etc/iptables.ipv4.nat"
+</code></pre>
+<ul>
+<li>If you are using RTL8188CUS chipset you had to replace original hostapd with the one prepared for this chipset. <pre><code>wget "http://raspberry-at-home.com/files/hostapd.gz"
+sudo gzip -d hostapd.gz
+sudo chmod 755 hostapd
+sudo cp hostapd /usr/sbin/
+</code></pre>
+</li>
+</ul>
+<p><img alt="first" src="./img/first.png" /></p>
+<ul>
+<li>
+<p>To check the mode, you can use the command iwconfig</p>
+<pre><code>root@Yantrr:~# iwconfig                                                         
+wlan0     IEEE 802.11bgn  ESSID:"VIBE2_AP"  Nickname:"&lt;WIFI@REALTEK&gt;"           
+          Mode:Master  Frequency:2.412 GHz  Access Point: 00:1D:43:C0:0C:F0     
+          Sensitivity:0/0                                                       
+          Retry:off   RTS thr:off   Fragment thr:off                            
+          Encryption key:off                                                    
+          Power Management:off                                                  
+          Link Quality=71/100  Signal level=-59 dBm  Noise level=0 dBm          
+          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0              
+          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+
+lo        no wireless extensions.
+
+eth0      no wireless extensions.
+</code></pre>
+</li>
+<li>
+<p>You can also verify using ipv4 tables file which can be accessed using</p>
+<pre><code>nano  /etc/iptables.ipv4.nat
+</code></pre>
+</li>
+<li>
+<p>Now you have setup your AP and can connect devices to it.</p>
+</li>
+</ul>
+              
+            </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+      
+    </span>
+</div>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 0.15.3
+Build Date UTC : 2016-07-19 15:48:42.120221
+-->
